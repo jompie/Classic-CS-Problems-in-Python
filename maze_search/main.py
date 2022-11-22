@@ -47,7 +47,7 @@ class Maze:
 
     def __str__(self) -> str:
         output: str = f"{'+-'*10}+\n"
-        for row in self._grid:
+        for row in reversed(self._grid):
             output += "|"
             output += "|".join([c.value for c in row])
             output += f"|\n{'+-'*10}+\n"
