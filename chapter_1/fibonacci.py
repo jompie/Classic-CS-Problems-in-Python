@@ -28,11 +28,12 @@ def fib3(n: int) -> int:
 def fib4(n: int) -> int:
     if n == 0:
         return n
-    a: int = 0
-    b: int = 1
+
+    last: int = 0
+    _next: int = 1
     for _ in range(1, n):
-        a, b = b, a + b
-    return b
+        last, _next = _next, last + _next
+    return _next
 
 
 # fibonacci generator
