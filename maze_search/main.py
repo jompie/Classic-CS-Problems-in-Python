@@ -1,6 +1,7 @@
 import random
 from enum import Enum
-from typing import NamedTuple, List
+from typing import NamedTuple, List, Optional
+from search import Node, dfs, node_to_path
 
 
 class Cell(str, Enum):
@@ -45,6 +46,40 @@ class Maze:
     def goal_test(self, ml: MazeLocation) -> bool:
         return ml == self.goal
 
+    def move_options(self, ml: MazeLocation) -> List[MazeLocation]:
+        locations: List[MazeLocation] = []
+        # check up
+        if (
+            ml.row + 1 < self._rows
+            and self._grid[ml.row + 1][ml.column] != Cell.BLOCKED
+        ):
+            locations.append(MazeLocation(ml.row + 1, ml.column))
+        # check down
+        if ml.row >= 1 and self._grid[ml.row - 1][ml.column] != Cell.BLOCKED:
+            locations.append(MazeLocation(ml.row - 1, ml.column))
+        # check right
+        if (
+            ml.column + 1 < self._columns
+            and self._grid[ml.row][ml.column + 1] != Cell.BLOCKED
+        ):
+            locations.append(MazeLocation(ml.row, ml.column + 1))
+        # check left
+        if ml.column >= 1 and self._grid[ml.row][ml.column - 1] != Cell.BLOCKED:
+            locations.append(MazeLocation(ml.row, ml.column - 1))
+        return locations
+
+    def mark(self, path: List[MazeLocation]) -> None:
+        for ml in path:
+            self._grid[ml.row][ml.column] = Cell.PATH
+        self._grid[self.start.row][self.start.column] = Cell.START
+        self._grid[self.goal.row][self.goal.column] = Cell.GOAL
+
+    def clear(self, path: List[MazeLocation]) -> None:
+        for ml in path:
+            self._grid[ml.row][ml.column] = Cell.EMPTY
+        self._grid[self.start.row][self.start.column] = Cell.START
+        self._grid[self.goal.row][self.goal.column] = Cell.GOAL
+
     def __str__(self) -> str:
         output: str = f"{'+-'*10}+\n"
         for row in reversed(self._grid):
@@ -55,5 +90,14 @@ class Maze:
 
 
 if __name__ == "__main__":
-    maze = Maze(sparseness=0.3)
-    print(maze)
+    maze = Maze()
+    solution1: Optional[Node[MazeLocation]] = dfs(
+        maze.start, maze.goal_test, maze.move_options
+    )
+    if solution1 is None:
+        print("No solution found using depth first search")
+    else:
+        path1: List[MazeLocation] = node_to_path(solution1)
+        maze.mark(path1)
+        print(maze)
+        maze.clear(path1)
